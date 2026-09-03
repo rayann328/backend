@@ -1,0 +1,1105 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.doseLog",
+    "label": "Create table \"doseLog\"",
+    "summary": "Creates table \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"doseLog\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"doseLog\"",
+        "sql": "CREATE TABLE \"public\".\"doseLog\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"medicationId\" text NOT NULL,\n  \"note\" text,\n  \"scheduleId\" text,\n  \"scheduledAt\" timestamptz NOT NULL,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"takenAt\" timestamptz,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"doseLog_status_check_5e5ed411\" CHECK (\"status\" IN ('TAKEN', 'SKIPPED', 'DELAYED', 'MISSED', 'PENDING'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"doseLog\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.medication",
+    "label": "Create table \"medication\"",
+    "summary": "Creates table \"medication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "medication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"medication\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"medication\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"medication\"",
+        "sql": "CREATE TABLE \"public\".\"medication\" (\n  \"brandName\" text,\n  \"color\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dosage\" text,\n  \"genericName\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text,\n  \"photoUrl\" text,\n  \"shape\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"strength\" text,\n  \"type\" text,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"medication_status_check_aef30f3b\" CHECK (\"status\" IN ('ACTIVE', 'ARCHIVED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"medication\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"medication\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.notification",
+    "label": "Create table \"notification\"",
+    "summary": "Creates table \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"notification\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"notification\"",
+        "sql": "CREATE TABLE \"public\".\"notification\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"isRead\" bool DEFAULT false NOT NULL,\n  \"message\" text NOT NULL,\n  \"title\" text NOT NULL,\n  \"type\" text,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"notification\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.passwordReset",
+    "label": "Create table \"passwordReset\"",
+    "summary": "Creates table \"passwordReset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "passwordReset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"passwordReset\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"passwordReset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"passwordReset\"",
+        "sql": "CREATE TABLE \"public\".\"passwordReset\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"expiresAt\" timestamptz NOT NULL,\n  \"id\" text NOT NULL,\n  \"tokenHash\" text NOT NULL,\n  \"used\" bool DEFAULT false NOT NULL,\n  \"userId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"passwordReset\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"passwordReset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.schedule",
+    "label": "Create table \"schedule\"",
+    "summary": "Creates table \"schedule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "schedule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"schedule\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"schedule\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"schedule\"",
+        "sql": "CREATE TABLE \"public\".\"schedule\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dayOfMonth\" int4,\n  \"daysOfWeek\" text,\n  \"endDate\" timestamptz,\n  \"id\" text NOT NULL,\n  \"intervalUnit\" text,\n  \"intervalValue\" int4,\n  \"medicationId\" text NOT NULL,\n  \"scheduleType\" text NOT NULL,\n  \"startDate\" timestamptz NOT NULL,\n  \"timeOfDay\" text,\n  \"timingTag\" text,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"schedule_scheduleType_check_8b70cb61\" CHECK (\"scheduleType\" IN ('DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM', 'INTERVAL', 'ONE_TIME'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"schedule\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"schedule\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.user",
+    "label": "Create table \"user\"",
+    "summary": "Creates table \"user\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"user\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"user\"",
+        "sql": "CREATE TABLE \"public\".\"user\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dateOfBirth\" timestamptz,\n  \"email\" text NOT NULL,\n  \"emailVerified\" bool DEFAULT false NOT NULL,\n  \"firstName\" text,\n  \"id\" text NOT NULL,\n  \"lastName\" text,\n  \"passwordHash\" text NOT NULL,\n  \"phone\" text,\n  \"role\" text DEFAULT 'USER' NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"user_role_check_1954e8c0\" CHECK (\"role\" IN ('USER', 'ADMIN'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"user\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.userSettings",
+    "label": "Create table \"userSettings\"",
+    "summary": "Creates table \"userSettings\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "userSettings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"userSettings\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"userSettings\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"userSettings\"",
+        "sql": "CREATE TABLE \"public\".\"userSettings\" (\n  \"biometricEnabled\" bool DEFAULT false NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"darkMode\" bool DEFAULT false NOT NULL,\n  \"id\" text NOT NULL,\n  \"language\" text DEFAULT 'en' NOT NULL,\n  \"medicationReminders\" bool DEFAULT true NOT NULL,\n  \"notificationSound\" bool DEFAULT true NOT NULL,\n  \"snoozeDuration\" int4 DEFAULT 10 NOT NULL,\n  \"twoFactorEnabled\" bool DEFAULT false NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"userId\" text NOT NULL,\n  \"vibration\" bool DEFAULT true NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"userSettings\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"userSettings\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.passwordReset.passwordReset_tokenHash_key",
+    "label": "Add unique constraint on \"passwordReset\" (tokenHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "passwordReset_tokenHash_key",
+        "table": "passwordReset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"passwordReset_tokenHash_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "passwordReset_tokenHash_key",
+          "public",
+          "\"public\".\"passwordReset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"passwordReset_tokenHash_key\"",
+        "sql": "ALTER TABLE \"public\".\"passwordReset\" ADD CONSTRAINT \"passwordReset_tokenHash_key\" UNIQUE (\"tokenHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"passwordReset_tokenHash_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "passwordReset_tokenHash_key",
+          "public",
+          "\"public\".\"passwordReset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.user.user_email_key",
+    "label": "Add unique constraint on \"user\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "user_email_key",
+        "table": "user"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"user_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_email_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"user_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"user\" ADD CONSTRAINT \"user_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"user_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "user_email_key",
+          "public",
+          "\"public\".\"user\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.userSettings.userSettings_userId_key",
+    "label": "Add unique constraint on \"userSettings\" (userId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "userSettings_userId_key",
+        "table": "userSettings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"userSettings_userId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "userSettings_userId_key",
+          "public",
+          "\"public\".\"userSettings\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"userSettings_userId_key\"",
+        "sql": "ALTER TABLE \"public\".\"userSettings\" ADD CONSTRAINT \"userSettings_userId_key\" UNIQUE (\"userId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"userSettings_userId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "userSettings_userId_key",
+          "public",
+          "\"public\".\"userSettings\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.doseLog.doseLog_medicationId_idx_af1a8ff3",
+    "label": "Create index \"doseLog_medicationId_idx_af1a8ff3\" on \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "doseLog_medicationId_idx_af1a8ff3",
+        "table": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"doseLog_medicationId_idx_af1a8ff3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_medicationId_idx_af1a8ff3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"doseLog_medicationId_idx_af1a8ff3\"",
+        "sql": "CREATE INDEX \"doseLog_medicationId_idx_af1a8ff3\" ON \"public\".\"doseLog\" (\"medicationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"doseLog_medicationId_idx_af1a8ff3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_medicationId_idx_af1a8ff3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.doseLog.doseLog_scheduleId_idx_5a3bfbcb",
+    "label": "Create index \"doseLog_scheduleId_idx_5a3bfbcb\" on \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "doseLog_scheduleId_idx_5a3bfbcb",
+        "table": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"doseLog_scheduleId_idx_5a3bfbcb\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_scheduleId_idx_5a3bfbcb\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"doseLog_scheduleId_idx_5a3bfbcb\"",
+        "sql": "CREATE INDEX \"doseLog_scheduleId_idx_5a3bfbcb\" ON \"public\".\"doseLog\" (\"scheduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"doseLog_scheduleId_idx_5a3bfbcb\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_scheduleId_idx_5a3bfbcb\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.doseLog.doseLog_scheduledAt_idx_f69c1204",
+    "label": "Create index \"doseLog_scheduledAt_idx_f69c1204\" on \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "doseLog_scheduledAt_idx_f69c1204",
+        "table": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"doseLog_scheduledAt_idx_f69c1204\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_scheduledAt_idx_f69c1204\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"doseLog_scheduledAt_idx_f69c1204\"",
+        "sql": "CREATE INDEX \"doseLog_scheduledAt_idx_f69c1204\" ON \"public\".\"doseLog\" (\"scheduledAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"doseLog_scheduledAt_idx_f69c1204\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_scheduledAt_idx_f69c1204\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.doseLog.doseLog_userId_idx_a489d58a",
+    "label": "Create index \"doseLog_userId_idx_a489d58a\" on \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "doseLog_userId_idx_a489d58a",
+        "table": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"doseLog_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"doseLog_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"doseLog_userId_idx_a489d58a\" ON \"public\".\"doseLog\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"doseLog_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"doseLog_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.medication.medication_userId_idx_a489d58a",
+    "label": "Create index \"medication_userId_idx_a489d58a\" on \"medication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "medication_userId_idx_a489d58a",
+        "table": "medication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"medication_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"medication_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"medication_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"medication_userId_idx_a489d58a\" ON \"public\".\"medication\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"medication_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"medication_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.notification.notification_userId_idx_a489d58a",
+    "label": "Create index \"notification_userId_idx_a489d58a\" on \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "notification_userId_idx_a489d58a",
+        "table": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"notification_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"notification_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"notification_userId_idx_a489d58a\" ON \"public\".\"notification\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"notification_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"notification_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.passwordReset.passwordReset_expiresAt_idx_6b6b8c10",
+    "label": "Create index \"passwordReset_expiresAt_idx_6b6b8c10\" on \"passwordReset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "passwordReset_expiresAt_idx_6b6b8c10",
+        "table": "passwordReset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"passwordReset_expiresAt_idx_6b6b8c10\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"passwordReset_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"passwordReset_expiresAt_idx_6b6b8c10\"",
+        "sql": "CREATE INDEX \"passwordReset_expiresAt_idx_6b6b8c10\" ON \"public\".\"passwordReset\" (\"expiresAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"passwordReset_expiresAt_idx_6b6b8c10\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"passwordReset_expiresAt_idx_6b6b8c10\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.passwordReset.passwordReset_userId_idx_a489d58a",
+    "label": "Create index \"passwordReset_userId_idx_a489d58a\" on \"passwordReset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "passwordReset_userId_idx_a489d58a",
+        "table": "passwordReset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"passwordReset_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"passwordReset_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"passwordReset_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"passwordReset_userId_idx_a489d58a\" ON \"public\".\"passwordReset\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"passwordReset_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"passwordReset_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.schedule.schedule_medicationId_idx_af1a8ff3",
+    "label": "Create index \"schedule_medicationId_idx_af1a8ff3\" on \"schedule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "schedule_medicationId_idx_af1a8ff3",
+        "table": "schedule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"schedule_medicationId_idx_af1a8ff3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"schedule_medicationId_idx_af1a8ff3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"schedule_medicationId_idx_af1a8ff3\"",
+        "sql": "CREATE INDEX \"schedule_medicationId_idx_af1a8ff3\" ON \"public\".\"schedule\" (\"medicationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"schedule_medicationId_idx_af1a8ff3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"schedule_medicationId_idx_af1a8ff3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.doseLog.doseLog_userId_fkey",
+    "label": "Add foreign key \"doseLog_userId_fkey\" on \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "doseLog_userId_fkey",
+        "table": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"doseLog_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "doseLog_userId_fkey",
+          "public",
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"doseLog_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"doseLog\"\nADD CONSTRAINT \"doseLog_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"doseLog_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "doseLog_userId_fkey",
+          "public",
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.doseLog.doseLog_medicationId_fkey",
+    "label": "Add foreign key \"doseLog_medicationId_fkey\" on \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "doseLog_medicationId_fkey",
+        "table": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"doseLog_medicationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "doseLog_medicationId_fkey",
+          "public",
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"doseLog_medicationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"doseLog\"\nADD CONSTRAINT \"doseLog_medicationId_fkey\"\nFOREIGN KEY (\"medicationId\")\nREFERENCES \"public\".\"medication\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"doseLog_medicationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "doseLog_medicationId_fkey",
+          "public",
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.doseLog.doseLog_scheduleId_fkey",
+    "label": "Add foreign key \"doseLog_scheduleId_fkey\" on \"doseLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "doseLog_scheduleId_fkey",
+        "table": "doseLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"doseLog_scheduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "doseLog_scheduleId_fkey",
+          "public",
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"doseLog_scheduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"doseLog\"\nADD CONSTRAINT \"doseLog_scheduleId_fkey\"\nFOREIGN KEY (\"scheduleId\")\nREFERENCES \"public\".\"schedule\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"doseLog_scheduleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "doseLog_scheduleId_fkey",
+          "public",
+          "\"public\".\"doseLog\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.medication.medication_userId_fkey",
+    "label": "Add foreign key \"medication_userId_fkey\" on \"medication\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "medication_userId_fkey",
+        "table": "medication"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"medication_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "medication_userId_fkey",
+          "public",
+          "\"public\".\"medication\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"medication_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"medication\"\nADD CONSTRAINT \"medication_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"medication_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "medication_userId_fkey",
+          "public",
+          "\"public\".\"medication\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.notification.notification_userId_fkey",
+    "label": "Add foreign key \"notification_userId_fkey\" on \"notification\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "notification_userId_fkey",
+        "table": "notification"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"notification_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "notification_userId_fkey",
+          "public",
+          "\"public\".\"notification\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"notification_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"notification\"\nADD CONSTRAINT \"notification_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"notification_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "notification_userId_fkey",
+          "public",
+          "\"public\".\"notification\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.passwordReset.passwordReset_userId_fkey",
+    "label": "Add foreign key \"passwordReset_userId_fkey\" on \"passwordReset\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "passwordReset_userId_fkey",
+        "table": "passwordReset"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"passwordReset_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "passwordReset_userId_fkey",
+          "public",
+          "\"public\".\"passwordReset\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"passwordReset_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"passwordReset\"\nADD CONSTRAINT \"passwordReset_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"passwordReset_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "passwordReset_userId_fkey",
+          "public",
+          "\"public\".\"passwordReset\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.schedule.schedule_medicationId_fkey",
+    "label": "Add foreign key \"schedule_medicationId_fkey\" on \"schedule\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "schedule_medicationId_fkey",
+        "table": "schedule"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"schedule_medicationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "schedule_medicationId_fkey",
+          "public",
+          "\"public\".\"schedule\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"schedule_medicationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"schedule\"\nADD CONSTRAINT \"schedule_medicationId_fkey\"\nFOREIGN KEY (\"medicationId\")\nREFERENCES \"public\".\"medication\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"schedule_medicationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "schedule_medicationId_fkey",
+          "public",
+          "\"public\".\"schedule\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.userSettings.userSettings_userId_fkey",
+    "label": "Add foreign key \"userSettings_userId_fkey\" on \"userSettings\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "userSettings_userId_fkey",
+        "table": "userSettings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"userSettings_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "userSettings_userId_fkey",
+          "public",
+          "\"public\".\"userSettings\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"userSettings_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"userSettings\"\nADD CONSTRAINT \"userSettings_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"user\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"userSettings_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "userSettings_userId_fkey",
+          "public",
+          "\"public\".\"userSettings\""
+        ]
+      }
+    ]
+  }
+]

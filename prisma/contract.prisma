@@ -1,0 +1,157 @@
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum MedicationStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ScheduleType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
+  INTERVAL
+  ONE_TIME
+}
+
+enum DoseStatus {
+  TAKEN
+  SKIPPED
+  DELAYED
+  MISSED
+  PENDING
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  phone         String?
+  dateOfBirth   DateTime?
+  role          UserRole     @default(USER)
+  emailVerified Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now())
+
+  medications   Medication[]
+  doseLogs      DoseLog[]
+  settings      UserSettings?
+  notifications Notification[]
+  passwordResets PasswordReset[]
+}
+
+model Medication {
+  id          String           @id @default(uuid())
+  userId      String
+  name        String
+  genericName String?
+  brandName   String?
+  dosage      String?
+  strength    String?
+  type        String?
+  color       String?
+  shape       String?
+  notes       String?
+  photoUrl    String?
+  status      MedicationStatus @default(ACTIVE)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @default(now())
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedules   Schedule[]
+  doseLogs    DoseLog[]
+
+  @@index([userId])
+}
+
+model Schedule {
+  id            String       @id @default(uuid())
+  medicationId  String
+  scheduleType  ScheduleType
+  startDate     DateTime
+  endDate       DateTime?
+  intervalValue Int?
+  intervalUnit  String?
+  daysOfWeek    String?
+  dayOfMonth    Int?
+  timeOfDay     String?
+  timingTag     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now())
+
+  medication    Medication   @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  doseLogs      DoseLog[]
+
+  @@index([medicationId])
+}
+
+model DoseLog {
+  id           String      @id @default(uuid())
+  userId       String
+  medicationId String
+  scheduleId   String?
+  scheduledAt  DateTime
+  status       DoseStatus  @default(PENDING)
+  takenAt      DateTime?
+  note         String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now())
+
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medication   Medication  @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  schedule     Schedule?   @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([medicationId])
+  @@index([scheduledAt])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserSettings {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  darkMode            Boolean  @default(false)
+  language            String   @default("en")
+  medicationReminders Boolean  @default(true)
+  notificationSound   Boolean  @default(true)
+  vibration           Boolean  @default(true)
+  snoozeDuration      Int      @default(10)
+  biometricEnabled    Boolean  @default(false)
+  twoFactorEnabled    Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now())
+
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
