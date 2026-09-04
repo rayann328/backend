@@ -43,6 +43,7 @@ model User {
   settings      UserSettings?
   notifications Notification[]
   passwordResets PasswordReset[]
+  emailVerifications EmailVerification[]
 }
 
 model Medication {
@@ -143,6 +144,19 @@ model UserSettings {
 }
 
 model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+model EmailVerification {
   id        String   @id @default(uuid())
   userId    String
   tokenHash String   @unique

@@ -8,6 +8,10 @@
       "model": "DoseLog",
       "namespace": "public"
     },
+    "emailVerification": {
+      "model": "EmailVerification",
+      "namespace": "public"
+    },
     "medication": {
       "model": "Medication",
       "namespace": "public"
@@ -280,6 +284,93 @@
               },
               "namespaceId": "public",
               "table": "doseLog"
+            }
+          },
+          "EmailVerification": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tokenHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "used": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "tokenHash": {
+                  "column": "tokenHash"
+                },
+                "used": {
+                  "column": "used"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "emailVerification"
             }
           },
           "Medication": {
@@ -959,6 +1050,21 @@
                   "namespace": "public"
                 }
               },
+              "emailVerifications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "EmailVerification",
+                  "namespace": "public"
+                }
+              },
               "medications": {
                 "cardinality": "1:N",
                 "on": {
@@ -1387,6 +1493,97 @@
                 ]
               },
               "uniques": []
+            },
+            "emailVerification": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "tokenHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "used": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "emailVerification"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "expiresAt"
+                  ],
+                  "name": "emailVerification_expiresAt_idx_6b6b8c10",
+                  "prefix": "emailVerification_expiresAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "emailVerification_userId_idx_a489d58a",
+                  "prefix": "emailVerification_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "tokenHash"
+                  ]
+                }
+              ]
             },
             "medication": {
               "checks": [
@@ -2106,10 +2303,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5b06a933e786607fb5143bcaf50d72ef0720df1f6adec6c2df8da48709755202"
+    "storageHash": "4aac36c3440f8dad0f3fa3a3eed601a7e45236878c2302b8ce361f377af549bd"
   },
   "execution": {
-    "executionHash": "2f438696a04fc655106f3f412d93a1935c97237d2e4b7b3df1296bcbcbe848db",
+    "executionHash": "61c29162d96cf187e3ece3291284ed0e35ceceac77bddead650873a9428d582f",
     "mutations": {
       "defaults": [
         {
@@ -2121,6 +2318,17 @@
             "column": "id",
             "namespace": "public",
             "table": "doseLog"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "id",
+            "namespace": "public",
+            "table": "emailVerification"
           }
         },
         {

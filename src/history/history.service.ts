@@ -11,12 +11,34 @@ import { PrismaService } from '../prisma/prisma.service';
 export class HistoryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(userId: string) {
-    return this.prisma.db.orm.public.DoseLog
+async findAll(userId: string) {
+  const doseLogs =
+    await this.prisma.db.orm.public.DoseLog
       .where({ userId })
       .all();
-  }
 
+  return doseLogs
+    .filter((dose) => {
+      const status =
+        dose.status?.toString().toUpperCase();
+
+      return (
+        status === 'TAKEN' ||
+        status === 'SKIPPED' ||
+        status === 'DELAYED' ||
+        status === 'MISSED'
+      );
+    })
+    .sort((a, b) => {
+      const dateA =
+        new Date(String(a.scheduledAt)).getTime();
+
+      const dateB =
+        new Date(String(b.scheduledAt)).getTime();
+
+      return dateB - dateA;
+    });
+}
   async findOne(userId: string, id: string) {
     const doseLog =
       await this.prisma.db.orm.public.DoseLog.first({
