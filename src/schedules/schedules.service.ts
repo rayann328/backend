@@ -24,13 +24,17 @@ export class SchedulesService {
       }
 
       return this.prisma.db.orm.public.Schedule
-        .where({ medicationId })
+        .where({
+          medicationId,
+        })
         .all();
     }
 
     const medications =
       await this.prisma.db.orm.public.Medication
-        .where({ userId })
+        .where({
+          userId,
+        })
         .all();
 
     const schedules: any[] = [];
@@ -93,7 +97,6 @@ export class SchedulesService {
       timingTag?: string;
     },
   ) {
-    // Make sure the medication belongs to this user.
     const medication =
       await this.prisma.db.orm.public.Medication.first({
         id: data.medicationId,
@@ -106,47 +109,71 @@ export class SchedulesService {
       );
     }
 
-    // Create the schedule first.
+    const startDate = new Date(data.startDate);
+
+    if (Number.isNaN(startDate.getTime())) {
+      throw new Error('Invalid schedule start date');
+    }
+
+    const endDate = data.endDate
+      ? new Date(data.endDate)
+      : null;
+
+    if (
+      endDate &&
+      Number.isNaN(endDate.getTime())
+    ) {
+      throw new Error('Invalid schedule end date');
+    }
+
     const schedule =
       await this.prisma.db.orm.public.Schedule.create({
         medicationId: data.medicationId,
         scheduleType: data.scheduleType,
 
-        startDate: Temporal.Instant.from(
-          new Date(data.startDate).toISOString(),
-        ),
+        startDate:
+          Temporal.Instant.from(
+            startDate.toISOString(),
+          ),
 
-        endDate: data.endDate
-          ? Temporal.Instant.from(
-              new Date(data.endDate).toISOString(),
-            )
-          : null,
+        endDate:
+          endDate
+            ? Temporal.Instant.from(
+                endDate.toISOString(),
+              )
+            : null,
 
         intervalValue:
-            data.intervalValue ?? null,
+          data.intervalValue ?? null,
 
         intervalUnit:
-            data.intervalUnit ?? null,
+          data.intervalUnit ?? null,
 
         daysOfWeek:
-            data.daysOfWeek ?? null,
+          data.daysOfWeek ?? null,
 
         dayOfMonth:
-            data.dayOfMonth ?? null,
+          data.dayOfMonth ?? null,
 
         timeOfDay:
-            data.timeOfDay ?? null,
+          data.timeOfDay ?? null,
 
         timingTag:
-            data.timingTag ?? null,
+          data.timingTag ?? null,
       });
 
-    // Automatically create DoseLogs for this schedule.
+    // Generate the DoseLogs immediately.
+    // These are what Dashboard, Schedule,
+    // Reminders and Calendar display.
     await this.generateDoseLogs(
       userId,
       data.medicationId,
       schedule.id,
-      data,
+      {
+        ...data,
+        startDate,
+        endDate: endDate ?? undefined,
+      },
     );
 
     return schedule;
@@ -163,11 +190,8 @@ export class SchedulesService {
         | 'CUSTOM'
         | 'INTERVAL'
         | 'ONE_TIME';
-
       startDate?: Date | string;
-
       endDate?: Date | string | null;
-
       intervalValue?: number | null;
       intervalUnit?: string | null;
       daysOfWeek?: string | null;
@@ -181,21 +205,24 @@ export class SchedulesService {
     const updateData: any = {};
 
     if (data.scheduleType !== undefined) {
-      updateData.scheduleType = data.scheduleType;
+      updateData.scheduleType =
+        data.scheduleType;
     }
 
     if (data.startDate !== undefined) {
-      updateData.startDate = Temporal.Instant.from(
-        new Date(data.startDate).toISOString(),
-      );
+      updateData.startDate =
+        Temporal.Instant.from(
+          new Date(data.startDate).toISOString(),
+        );
     }
 
     if (data.endDate !== undefined) {
-      updateData.endDate = data.endDate
-        ? Temporal.Instant.from(
-            new Date(data.endDate).toISOString(),
-          )
-        : null;
+      updateData.endDate =
+        data.endDate
+          ? Temporal.Instant.from(
+              new Date(data.endDate).toISOString(),
+            )
+          : null;
     }
 
     if (data.intervalValue !== undefined) {
@@ -229,7 +256,9 @@ export class SchedulesService {
     }
 
     return this.prisma.db.orm.public.Schedule
-      .where({ id })
+      .where({
+        id,
+      })
       .update(updateData);
   }
 
@@ -240,16 +269,12 @@ export class SchedulesService {
     await this.findOne(userId, id);
 
     return this.prisma.db.orm.public.Schedule
-      .where({ id })
+      .where({
+        id,
+      })
       .delete();
   }
 
-  /**
-   * Generate DoseLogs for a newly-created schedule.
-   *
-   * We generate 30 days ahead for recurring schedules.
-   * A ONE_TIME schedule creates only one DoseLog.
-   */
   private async generateDoseLogs(
     userId: string,
     medicationId: string,
@@ -272,7 +297,9 @@ export class SchedulesService {
     },
   ) {
     const startDate =
-      new Date(data.startDate);
+      data.startDate instanceof Date
+        ? new Date(data.startDate)
+        : new Date(data.startDate);
 
     if (Number.isNaN(startDate.getTime())) {
       throw new Error(
@@ -293,12 +320,6 @@ export class SchedulesService {
       );
     }
 
-    /*
-     * Extract HH:mm from timeOfDay.
-     *
-     * Example:
-     * "10:30" → 10:30 AM
-     */
     const getTime = () => {
       if (
         !data.timeOfDay ||
@@ -337,9 +358,7 @@ export class SchedulesService {
       minute,
     } = getTime();
 
-    /*
-     * ONE_TIME
-     */
+    // ONE TIME
     if (
       data.scheduleType ===
       'ONE_TIME'
@@ -364,10 +383,8 @@ export class SchedulesService {
       return;
     }
 
-    /*
-     * Generate recurring doses for
-     * the next 30 days.
-     */
+    // Generate recurring doses
+    // for the next 30 days.
     const generationEnd =
       new Date(startDate);
 
@@ -375,10 +392,6 @@ export class SchedulesService {
       generationEnd.getDate() + 30,
     );
 
-    /*
-     * If the user specified an end date,
-     * don't generate beyond it.
-     */
     if (
       endDate &&
       endDate < generationEnd
@@ -388,9 +401,7 @@ export class SchedulesService {
       );
     }
 
-    /*
-     * DAILY
-     */
+    // DAILY
     if (
       data.scheduleType ===
       'DAILY'
@@ -416,7 +427,7 @@ export class SchedulesService {
             userId,
             medicationId,
             scheduleId,
-            current,
+            new Date(current),
           );
         }
 
@@ -428,16 +439,7 @@ export class SchedulesService {
       return;
     }
 
-    /*
-     * WEEKLY
-     *
-     * If daysOfWeek is supplied, support:
-     *
-     * "MONDAY,WEDNESDAY,FRIDAY"
-     *
-     * Otherwise, repeat every 7 days
-     * starting from startDate.
-     */
+    // WEEKLY
     if (
       data.scheduleType ===
       'WEEKLY'
@@ -478,7 +480,7 @@ export class SchedulesService {
             userId,
             medicationId,
             scheduleId,
-            current,
+            new Date(current),
           );
         }
 
@@ -490,9 +492,7 @@ export class SchedulesService {
       return;
     }
 
-    /*
-     * MONTHLY
-     */
+    // MONTHLY
     if (
       data.scheduleType ===
       'MONTHLY'
@@ -518,7 +518,7 @@ export class SchedulesService {
             userId,
             medicationId,
             scheduleId,
-            current,
+            new Date(current),
           );
         }
 
@@ -530,15 +530,7 @@ export class SchedulesService {
       return;
     }
 
-    /*
-     * INTERVAL
-     *
-     * Example:
-     * intervalValue = 2
-     * intervalUnit = "DAY"
-     *
-     * → every 2 days
-     */
+    // INTERVAL
     if (
       data.scheduleType ===
       'INTERVAL'
@@ -582,7 +574,7 @@ export class SchedulesService {
             userId,
             medicationId,
             scheduleId,
-            current,
+            new Date(current),
           );
         }
 
@@ -611,7 +603,6 @@ export class SchedulesService {
               interval,
           );
         } else {
-          // Default to days.
           current.setDate(
             current.getDate() +
               interval,
@@ -622,13 +613,8 @@ export class SchedulesService {
       return;
     }
 
-    /*
-     * CUSTOM
-     *
-     * For now, treat CUSTOM as daily
-     * unless specific custom recurrence
-     * data is supplied.
-     */
+    // CUSTOM
+    // Currently treated as daily.
     if (
       data.scheduleType ===
       'CUSTOM'
@@ -654,7 +640,7 @@ export class SchedulesService {
             userId,
             medicationId,
             scheduleId,
-            current,
+            new Date(current),
           );
         }
 
@@ -676,31 +662,17 @@ export class SchedulesService {
         userId,
         medicationId,
         scheduleId,
-
         scheduledAt:
           Temporal.Instant.from(
             scheduledAt.toISOString(),
           ),
-
         status: 'PENDING',
-
         takenAt: null,
         note: null,
       },
     );
   }
 
-  /**
-   * Convert daysOfWeek into JavaScript
-   * day numbers.
-   *
-   * JavaScript:
-   * Sunday = 0
-   * Monday = 1
-   * Tuesday = 2
-   * ...
-   * Saturday = 6
-   */
   private parseDaysOfWeek(
     value?: string,
   ): {
@@ -725,22 +697,16 @@ export class SchedulesService {
     > = {
       SUNDAY: 0,
       SUN: 0,
-
       MONDAY: 1,
       MON: 1,
-
       TUESDAY: 2,
       TUE: 2,
-
       WEDNESDAY: 3,
       WED: 3,
-
       THURSDAY: 4,
       THU: 4,
-
       FRIDAY: 5,
       FRI: 5,
-
       SATURDAY: 6,
       SAT: 6,
     };
