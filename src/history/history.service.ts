@@ -17,10 +17,21 @@ async findAll(userId: string) {
       .where({ userId })
       .all();
 
+  const medications =
+    await this.prisma.db.orm.public.Medication
+      .where({ userId })
+      .all();
+
+  const medicationMap = new Map(
+    medications.map((medication) => [
+      String(medication.id),
+      medication,
+    ]),
+  );
+
   return doseLogs
     .filter((dose) => {
-      const status =
-        dose.status?.toString().toUpperCase();
+      const status = dose.status?.toString().toUpperCase();
 
       return (
         status === 'TAKEN' ||
@@ -28,6 +39,21 @@ async findAll(userId: string) {
         status === 'DELAYED' ||
         status === 'MISSED'
       );
+    })
+    .map((dose) => {
+      const medication = medicationMap.get(
+        String(dose.medicationId),
+      );
+
+      return {
+        ...dose,
+        medication: medication
+          ? {
+              id: medication.id,
+              name: medication.name,
+            }
+          : null,
+      };
     })
     .sort((a, b) => {
       const dateA =
